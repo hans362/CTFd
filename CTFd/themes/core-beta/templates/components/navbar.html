@@ -53,8 +53,14 @@
         {% endif %}
 
         <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('matches.listing') }}">
+            {% trans %}比赛{% endtrans %}
+          </a>
+        </li>
+
+        <li class="nav-item">
           <a class="nav-link" href="{{ url_for('challenges.listing') }}">
-            {% trans %}Challenges{% endtrans %}
+            {% trans %}练习{% endtrans %}
           </a>
         </li>
       </ul>

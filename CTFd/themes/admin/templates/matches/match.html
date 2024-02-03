@@ -1,0 +1,127 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+	<div class="container">
+		<h1>
+      {{ match.name }}管理
+    </h1>
+	</div>
+</div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <nav class="nav nav-tabs nav-fill" id="challenge-properties" role="tablist">
+        <a class="nav-item nav-link small active" data-toggle="tab" href="#challenges" role="tab">赛题</a>
+        <a class="nav-item nav-link small" data-toggle="tab" href="#players" role="tab">参赛者</a>
+        <a class="nav-item nav-link small" data-toggle="tab" href="#scoreboard" role="tab">记分板</a>
+      </nav>
+      <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="challenges" role="tabpanel">
+          <div class="row">
+            <div class="col-md-12">
+              <h3 class="text-center py-3 d-block">赛题</h3>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>名称</th>
+                    <th>分值</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for challenge in match.challenges %}
+                  <tr>
+                    <td><a href="{{ url_for('admin.challenges_detail', challenge_id=challenge.id) }}">{{ challenge.name }}</a></td>
+                    <td>{{ challenge.value }}</td>
+                    <td>
+                      <form action="{{ url_for('admin.matches_challenges_remove', match_id=match.id) }}" method="post">
+                        <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
+                        <input type="hidden" value="" name="nonce" class="nonce" />
+                        <button type="submit" class="btn btn-danger">移除</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              <form action="{{ url_for('admin.matches_challenges_add', match_id=match.id) }}" method="post">
+                <div class="form-group">
+                  <label for="challenge_id">添加赛题</label>
+                  <select class="form-control" id="challenge_id" name="challenge_id">
+                    {% for challenge in challenges %}
+                    <option value="{{ challenge.id }}">{{ challenge.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <input type="hidden" value="" name="nonce" class="nonce" />
+                </div>
+                <button type="submit" class="btn btn-primary">添加</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="players" role="tabpanel">
+          <div class="row">
+            <div class="col-md-12">
+              <h3 class="text-center py-3 d-block">参赛者</h3>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="scoreboard" role="tabpanel">
+          <div class="row">
+            <div class="col-md-12">
+              <h3 class="text-center py-3 d-block">记分板</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <form action="{{ url_for('admin.matches_detail', match_id=match.id) }}" method="post">
+        <div class="form-group">
+          <label for="name">比赛名称</label>
+          <input type="text" class="form-control" id="name" name="name" placeholder="比赛名称" value="{{ match.name }}">
+        </div>
+        <div class="form-group">
+          <label for="start">开始时间</label>
+          <input type="datetime-local" class="form-control" id="start" name="start" placeholder="开始时间" value="{{ match.start }}">
+        </div>
+        <div class="form-group">
+          <label for="end">结束时间</label>
+          <input type="datetime-local" class="form-control" id="end" name="end" placeholder="结束时间" value="{{ match.end }}">
+        </div>
+        <div class="form-group">
+          <label for="description">比赛描述</label>
+          <textarea class="form-control" id="description" name="description" rows="3">{{ match.description }}</textarea>
+        </div>
+        <div class="form-group">
+          <label for="max_team_size">最大队伍人数</label>
+          <input type="number" class="form-control" id="max_team_size" name="max_team_size" placeholder="最大队伍人数" value="{{ match.max_team_size }}">
+        </div>
+        <div class="form-group">
+          <label for="registration_deadline">报名截止时间</label>
+          <input type="datetime-local" class="form-control" id="registration_deadline" name="registration_deadline" placeholder="报名截止时间" value="{{ match.registration_deadline }}">
+        </div>
+        <div class="form-group">
+          <label for="visible">可见性</label>
+          <select class="form-control" id="visible" name="visible">
+            <option value="1" {% if match.visible == 1 %}selected{% endif %}>公开</option>
+            <option value="0" {% if match.visible == 0 %}selected{% endif %}>隐藏</option>
+          </select>
+        </div>
+        <input type="hidden" value="" name="nonce" class="nonce" />
+        <button type="submit" class="btn btn-primary">保存</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  nonces = document.getElementsByClassName('nonce');
+  for (var i = 0; i < nonces.length; i++) {
+    nonces[i].value = init.csrfNonce;
+  }
+</script>
+{% endblock %}

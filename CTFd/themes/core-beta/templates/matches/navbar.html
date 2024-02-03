@@ -1,0 +1,16 @@
+<nav class="navbar mb-4">
+  <ul class="nav nav-pills card-header-pills">
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'detail' %}active{% endif %}" href="{{ url_for('matches.detail', match_id=match.id) }}">基本信息</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'registration' %}active{% endif %}" href="{{ url_for('matches.registration', match_id=match.id) }}">报名</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'challenges' %}active{% endif %}" href="{{ url_for('matches.challenges', match_id=match.id) }}">题目</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'scoreboard' %}active{% endif %}" href="{{ url_for('matches.scoreboard', match_id=match.id) }}">记分板</a>
+    </li>
+  </ul>
+</nav>

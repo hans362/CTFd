@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="jumbotron">
+    <div class="container">
+      <h1>
+        比赛
+      </h1>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        {% for match in matches %}
+        <div class="card mb-3" onclick="window.location.href='{{ url_for('matches.detail', match_id=match.id) }}'">
+		      <div class="card-body">
+            <h3 class="mt-0 mb-2">{{ match.name }}</h3>
+            比赛时间：{{ match.start }} - {{ match.end }}<br>
+            报名截止时间：{{ match.registration_deadline }}<br>
+          </div>
+		    </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

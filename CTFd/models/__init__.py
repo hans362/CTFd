@@ -107,6 +107,27 @@ class Pages(db.Model):
         return "<Pages {0}>".format(self.route)
 
 
+matches_challenges = db.Table(
+    "matches_challenges",
+    db.Column("challenge_id", db.Integer, db.ForeignKey("challenges.id")),
+    db.Column("match_id", db.Integer, db.ForeignKey("matches.id")),
+)
+
+
+class Matches(db.Model):
+    __tablename__ = "matches"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80))
+    description = db.Column(db.Text)
+    start = db.Column(db.DateTime)
+    end = db.Column(db.DateTime)
+    max_team_size = db.Column(db.Integer)
+    registration_deadline = db.Column(db.DateTime)
+    visible = db.Column(db.Boolean)
+
+    challenges = db.relationship("Challenges", secondary=matches_challenges, backref="matches")
+
+
 class Challenges(db.Model):
     __tablename__ = "challenges"
     id = db.Column(db.Integer, primary_key=True)

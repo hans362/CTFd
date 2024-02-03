@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+  
+  {% include "matches/jumbotron.html" %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        {% include "matches/navbar.html" %}
+        <div class="row">
+          <div class="col-md-3 offset-md-1 mb-3 mb-md-0">
+            <div class="nav flex-column nav-pills" role="tablist">
+              <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#create" role="tab" aria-selected="true">创建队伍
+              </button>
+              <button class="nav-link" data-bs-toggle="pill" data-bs-target="#join" role="tab" aria-selected="false">加入已有队伍
+              </button>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="tab-content" id="v-pills-tabContent">
+              <div class="tab-pane fade active show" id="create" role="tabpanel">
+                <form action="" method="post">
+                  <div class="mb-3">
+                    <label for="team_name" class="form-label">队伍名称</label>
+                    <input type="text" class="form-control" id="team_name" name="team_name" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="team_description" class="form-label">队伍简介</label>
+                    <textarea class="form-control" id="team_description" name="team_description" rows="3" required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">创建队伍</button>
+                </form>
+              </div>
+              <div class="tab-pane fade" id="join" role="tabpanel">
+                <form action="" method="post">
+                  <div class="mb-3">
+                    <label for="team_id" class="form-label">队伍邀请码</label>
+                    <input type="text" class="form-control" id="team_id" name="team_id" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary">加入队伍</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
