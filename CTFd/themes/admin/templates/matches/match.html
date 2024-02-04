@@ -13,7 +13,7 @@
     <div class="col-md-6">
       <nav class="nav nav-tabs nav-fill" id="challenge-properties" role="tablist">
         <a class="nav-item nav-link small active" data-toggle="tab" href="#challenges" role="tab">赛题</a>
-        <a class="nav-item nav-link small" data-toggle="tab" href="#players" role="tab">参赛者</a>
+        <a class="nav-item nav-link small" data-toggle="tab" href="#matchteams" role="tab">参赛者</a>
         <a class="nav-item nav-link small" data-toggle="tab" href="#scoreboard" role="tab">记分板</a>
       </nav>
       <div class="tab-content" id="nav-tabContent">
@@ -21,49 +21,15 @@
           <div class="row">
             <div class="col-md-12">
               <h3 class="text-center py-3 d-block">赛题</h3>
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>名称</th>
-                    <th>分值</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for challenge in match.challenges %}
-                  <tr>
-                    <td><a href="{{ url_for('admin.challenges_detail', challenge_id=challenge.id) }}">{{ challenge.name }}</a></td>
-                    <td>{{ challenge.value }}</td>
-                    <td>
-                      <form action="{{ url_for('admin.matches_challenges_remove', match_id=match.id) }}" method="post">
-                        <input type="hidden" name="challenge_id" value="{{ challenge.id }}" />
-                        <input type="hidden" value="" name="nonce" class="nonce" />
-                        <button type="submit" class="btn btn-danger">移除</button>
-                      </form>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-              <form action="{{ url_for('admin.matches_challenges_add', match_id=match.id) }}" method="post">
-                <div class="form-group">
-                  <label for="challenge_id">添加赛题</label>
-                  <select class="form-control" id="challenge_id" name="challenge_id">
-                    {% for challenge in challenges %}
-                    <option value="{{ challenge.id }}">{{ challenge.name }}</option>
-                    {% endfor %}
-                  </select>
-                  <input type="hidden" value="" name="nonce" class="nonce" />
-                </div>
-                <button type="submit" class="btn btn-primary">添加</button>
-              </form>
+              {% include "admin/matches/challenges.html" %}
             </div>
           </div>
         </div>
-        <div class="tab-pane fade" id="players" role="tabpanel">
+        <div class="tab-pane fade" id="matchteams" role="tabpanel">
           <div class="row">
             <div class="col-md-12">
               <h3 class="text-center py-3 d-block">参赛者</h3>
+              {% include "admin/matches/matchteams.html" %}
             </div>
           </div>
         </div>

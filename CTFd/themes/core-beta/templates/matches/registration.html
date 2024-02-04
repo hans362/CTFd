@@ -7,6 +7,54 @@
     <div class="row">
       <div class="col-md-12">
         {% include "matches/navbar.html" %}
+        {% include "components/errors.html" %}
+        {% if matchteam %}
+        <div class="row">
+          <div class="col-md-3 offset-md-1 mb-3 mb-md-0">
+            <div class="nav flex-column nav-pills" role="tablist">
+              <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#info" role="tab" aria-selected="true">队伍信息
+              </button>
+              <button class="nav-link" data-bs-toggle="pill" data-bs-target="#members" role="tab" aria-selected="false">队伍成员
+              </button>
+              <button class="nav-link" data-bs-toggle="pill" data-bs-target="#invite" role="tab" aria-selected="false">邀请队员
+              </button>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="tab-content" id="v-pills-tabContent">
+              <div class="tab-pane fade active show" id="info" role="tabpanel">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title mb-3">{{ matchteam.name }}</h3>
+                    <p class="card-text">{{ matchteam.description }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="members" role="tabpanel">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title mb-3">队伍成员</h3>
+                    <ul class="list-group">
+                      {% for user in matchteam.users %}
+                      <li class="list-group-item"><a href="{{ url_for('users.public', user_id=user.id) }}">{{ user.name }}</a></li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane fade" id="invite" role="tabpanel">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title mb-3">邀请队员</h3>
+                    比赛允许每队最多{{ matchteam.users | length }}位队员，队员可使用以下邀请码加入队伍：<br>
+                    <code>{{ matchteam.token }}</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
         <div class="row">
           <div class="col-md-3 offset-md-1 mb-3 mb-md-0">
             <div class="nav flex-column nav-pills" role="tablist">
@@ -28,21 +76,36 @@
                     <label for="team_description" class="form-label">队伍简介</label>
                     <textarea class="form-control" id="team_description" name="team_description" rows="3" required></textarea>
                   </div>
+                  <input type="hidden" value="" name="nonce" class="nonce" />
+                  <script>
+                    nonces = document.getElementsByClassName('nonce');
+                    for (var i = 0; i < nonces.length; i++) {
+                      nonces[i].value = init.csrfNonce;
+                    }
+                  </script>
                   <button type="submit" class="btn btn-primary">创建队伍</button>
                 </form>
               </div>
               <div class="tab-pane fade" id="join" role="tabpanel">
                 <form action="" method="post">
                   <div class="mb-3">
-                    <label for="team_id" class="form-label">队伍邀请码</label>
-                    <input type="text" class="form-control" id="team_id" name="team_id" required>
+                    <label for="team_token" class="form-label">队伍邀请码</label>
+                    <input type="text" class="form-control" id="team_token" name="team_token" required>
                   </div>
+                  <input type="hidden" value="" name="nonce" class="nonce" />
+                  <script>
+                    nonces = document.getElementsByClassName('nonce');
+                    for (var i = 0; i < nonces.length; i++) {
+                      nonces[i].value = init.csrfNonce;
+                    }
+                  </script>
                   <button type="submit" class="btn btn-primary">加入队伍</button>
                 </form>
               </div>
             </div>
           </div>
         </div>
+        {% endif %}
       </div>
     </div>
   </div>

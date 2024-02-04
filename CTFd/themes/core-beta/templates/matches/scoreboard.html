@@ -59,6 +59,22 @@
 
       {% endif %}
     {% endcache %}
+    <table class="table table-striped">
+      <thead>
+      <tr>
+        <td>队伍名称</td>
+        <td>得分</td>
+      </tr>
+      </thead>
+      <tbody>
+        {% for matchteam in scoreboard %}
+          <tr>
+            <td>{{ matchteam.name }}</td>
+            <td>{{ scoreboard[matchteam] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 {% endblock %}
 

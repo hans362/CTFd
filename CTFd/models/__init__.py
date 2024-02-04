@@ -128,6 +128,31 @@ class Matches(db.Model):
     challenges = db.relationship("Challenges", secondary=matches_challenges, backref="matches")
 
 
+matchteams_users = db.Table(
+    "matchteams_users",
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
+    db.Column("matchteam_id", db.Integer, db.ForeignKey("matchteams.id")),
+)
+
+
+class MatchTeams(db.Model):
+    __tablename__ = "matchteams"
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(db.Integer, db.ForeignKey("matches.id"))
+    name = db.Column(db.String(80))
+    description = db.Column(db.Text)
+    token = db.Column(db.String(32))
+
+    match = db.relationship("Matches", foreign_keys="MatchTeams.match_id", lazy="select")
+    users = db.relationship("Users", secondary=matchteams_users, backref="matchteams")
+
+    def __init__(self, *args, **kwargs):
+        super(MatchTeams, self).__init__(**kwargs)
+        from random import SystemRandom
+        from string import ascii_lowercase, digits
+        self.token = ''.join(SystemRandom().choice(ascii_lowercase + digits) for _ in range(16))
+
+
 class Challenges(db.Model):
     __tablename__ = "challenges"
     id = db.Column(db.Integer, primary_key=True)

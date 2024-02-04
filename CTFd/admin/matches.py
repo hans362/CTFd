@@ -1,7 +1,7 @@
 from flask import redirect, render_template, request, url_for
 
 from CTFd.admin import admin
-from CTFd.models import Challenges, Matches, db
+from CTFd.models import Challenges, MatchTeams, Matches, db
 from CTFd.plugins import bypass_csrf_protection
 from CTFd.utils.decorators import admins_only
 
@@ -46,7 +46,8 @@ def matches_detail(match_id):
         return redirect(url_for("admin.matches_detail", match_id=match.id))
     else:
         challenges = Challenges.query.filter(Challenges.id.notin_([c.id for c in match.challenges])).all()
-        return render_template("admin/matches/match.html", match=match, challenges=challenges)
+        matchteams = MatchTeams.query.filter_by(match_id=match.id).all()
+        return render_template("admin/matches/match.html", match=match, challenges=challenges, matchteams=matchteams)
     
 @admin.route("/admin/matches/<int:match_id>/delete", methods=["POST"])
 @admins_only
@@ -75,3 +76,12 @@ def matches_challenges_remove(match_id):
     match.challenges.remove(challenge)
     db.session.commit()
     return redirect(url_for("admin.matches_detail", match_id=match.id))
+
+@admin.route("/admin/matches/<int:match_id>/matchteams/delete", methods=["POST"])
+@admins_only
+def matches_matchteams_delete(match_id):
+    matchteam_id = request.form["matchteam_id"]
+    matchteam = MatchTeams.query.filter_by(id=matchteam_id, match_id=match_id).first_or_404()
+    db.session.delete(matchteam)
+    db.session.commit()
+    return redirect(url_for("admin.matches_detail", match_id=match_id))

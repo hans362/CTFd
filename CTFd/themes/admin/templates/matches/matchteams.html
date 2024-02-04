@@ -1,0 +1,24 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>名称</th>
+      <th>人数</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for matchteam in matchteams %}
+    <tr>
+      <td>{{ matchteam.name }}</td>
+      <td>{{ matchteam.users | length }}</td>
+      <td>
+        <form action="{{ url_for('admin.matches_matchteams_delete', match_id=match.id) }}" method="post">
+          <input type="hidden" name="matchteam_id" value="{{ matchteam.id }}" />
+          <input type="hidden" value="" name="nonce" class="nonce" />
+          <button type="submit" class="btn btn-danger">删除</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

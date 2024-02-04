@@ -5,7 +5,43 @@
   <div class="container">
     <div class="row">
       {% include "matches/navbar.html" %}
-      这里是题目列表
+      {% include "components/errors.html" %}
+      <div 
+        x-data="ChallengeBoard"
+        @load-challenge.window="loadChallenge($event.detail)"
+      >
+        <div
+          x-ref="challengeWindow" id="challenge-window" class="modal fade" tabindex="-1" role="dialog" x-data=""
+          x-html="$store.challenge.data.view"
+        ></div>
+        <div x-show="loaded">
+          {% for category in challenges %}
+          <div class="pt-5">
+            <div class="category-header mb-3">
+              <h3>{{ category }}</h3>
+            </div>
+            <div class="category-challenges d-flex flex-column">
+              <div class="challenges-row row">
+                {% for challenge in challenges[category] %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                  <button class="challenge-button btn btn-dark w-100 text-truncate my-3{% if challenge.id in solve_ids %} challenge-solved{% endif %}" @click="loadChallenge({{ challenge.id }})" value="{{ challenge.id }}">
+                    <div class="challenge-inner my-3">
+                      <p>{{ challenge.name }}</p>
+                      <span>{{ challenge.value }}</span>
+                    </div>
+                  </button>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}        
+        </div>
+      </div>
     </div>
   </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/challenges.js") }}
 {% endblock %}

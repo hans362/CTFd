@@ -1,8 +1,21 @@
+<script src="https://cdn.jsdelivr.net/npm/moment@2.30.1/min/moment-with-locales.min.js"></script>
 <div class="jumbotron">
   <div class="container">
     <h1>
       {{ match.name }}
     </h1>
-    比赛时间：{{ match.start }} - {{ match.end }}<br>
+    比赛时间：<script>document.write(moment("{{ match.start }}").locale('zh-cn').format("LLLL"));</script> - <script>document.write(moment("{{ match.end }}").locale('zh-cn').format("LLLL"));</script><br>
+    <span class="badge bg-primary mt-2">
+      {% if match.max_team_size == 1 %}
+        个人赛
+      {% else %}
+        团队赛
+      {% endif %}
+    </span>
+    {% if match.max_team_size > 1 %}
+      <span class="badge bg-info mt-2">
+        最多{{ match.max_team_size }}人
+      </span>
+    {% endif %}
   </div>
 </div>
