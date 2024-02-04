@@ -9,6 +9,7 @@ from CTFd.api.v1.helpers.schemas import sqlalchemy_to_pydantic
 from CTFd.api.v1.schemas import APIDetailedSuccessResponse, APIListSuccessResponse
 from CTFd.cache import clear_challenges, clear_standings
 from CTFd.constants import RawEnum
+from CTFd.matches import match_started, match_ended, user_registered, get_solve_ids_for_matchteam, get_user_matchteam
 from CTFd.models import ChallengeFiles as ChallengeFilesModel
 from CTFd.models import Challenges
 from CTFd.models import ChallengeTopics as ChallengeTopicsModel
@@ -289,10 +290,21 @@ class Challenge(Resource):
         if is_admin():
             chal = Challenges.query.filter(Challenges.id == challenge_id).first_or_404()
         else:
+            # chal = Challenges.query.filter(
+            #     Challenges.id == challenge_id,
+            #     and_(Challenges.state != "hidden", Challenges.state != "locked"),
+            # ).first_or_404()
             chal = Challenges.query.filter(
-                Challenges.id == challenge_id,
-                and_(Challenges.state != "hidden", Challenges.state != "locked"),
+                Challenges.id == challenge_id
             ).first_or_404()
+            if chal.state == "hidden" or chal.state == "locked":
+                visible = False
+                for match in chal.matches:
+                    if chal.state == "hidden" and authed() and match_started(match) and not match_ended(match) and user_registered(match):
+                        visible = True
+                        break
+                if not visible:
+                    abort(404)
 
         try:
             chal_class = get_chal_class(chal.type)
@@ -544,7 +556,21 @@ class ChallengeAttempt(Resource):
         challenge = Challenges.query.filter_by(id=challenge_id).first_or_404()
 
         if challenge.state == "hidden":
-            abort(404)
+            visible = False
+            for match in challenge.matches:
+                if challenge.state == "hidden" and authed() and match_started(match) and not match_ended(match) and user_registered(match):
+                    visible = True
+                    if challenge.id in get_solve_ids_for_matchteam(get_user_matchteam(match)):
+                        return {
+                            "success": True,
+                            "data": {
+                                "status": "already_solved",
+                                "message": "You already solved this",
+                            },
+                        }
+                    break
+            if not visible:
+                abort(404)
 
         if challenge.state == "locked":
             abort(403)
@@ -712,7 +738,13 @@ class ChallengeSolves(Resource):
         # TODO: Need a generic challenge visibility call.
         # However, it should be stated that a solve on a gated challenge is not considered private.
         if challenge.state == "hidden" and is_admin() is False:
-            abort(404)
+            visible = False
+            for match in challenge.matches:
+                if challenge.state == "hidden" and authed() and match_started(match) and not match_ended(match) and user_registered(match):
+                    visible = True
+                    break
+            if not visible:
+                abort(404)
 
         freeze = get_config("freeze")
         if freeze:

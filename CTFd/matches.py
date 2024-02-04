@@ -1,5 +1,5 @@
 import datetime
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, json, redirect, render_template, request, url_for
 
 from CTFd.utils.decorators import (
     authed_only,
@@ -13,7 +13,6 @@ from CTFd.utils.user import get_current_user
 matches = Blueprint("matches", __name__)
     
 def match_started(match):
-    print(match.start, datetime.datetime.now())
     return match.start < datetime.datetime.now()
 
 def match_ended(match):
@@ -49,6 +48,16 @@ def get_solve_ids_for_matchteam(matchteam):
         user_solve_ids = {value for value, in user_solve_ids}
         solve_ids = solve_ids.union(user_solve_ids)
     return solve_ids
+
+def get_solves_for_matchteam(matchteam):
+    solves = []
+    for user in matchteam.users:
+        user_solves = (
+            Solves.query.filter(Solves.account_id == user.account_id, Solves.date >= matchteam.match.start, Solves.date <= matchteam.match.end, Solves.challenge_id.in_([challenge.id for challenge in matchteam.match.challenges]))
+            .all()
+        )
+        solves.extend(user_solves)
+    return solves
 
 @matches.route("/matches")
 @authed_only
@@ -137,7 +146,7 @@ def challenges(match_id):
         solve_ids = get_solve_ids_for_matchteam(matchteam)
     return render_template("matches/challenges.html", infos=infos, errors=errors, match=match, challenges=challenges, solve_ids=solve_ids, active="challenges")
 
-@matches.route("/matches/<int:match_id>/scoreboard")
+@matches.route("/matches/<int:match_id>/scoreboard", methods=["GET", "POST"])
 @authed_only
 @require_complete_profile
 @require_verified_emails
@@ -147,13 +156,25 @@ def scoreboard(match_id):
     match = Matches.query.filter_by(visible=True, id=match_id).first_or_404()
     if not user_registered(match):
         return redirect(url_for("matches.registration", match_id=match_id))
-    scoreboard = {}
     matchteams = MatchTeams.query.filter_by(match_id=match.id).all()
-    for matchteam in matchteams:
-        solve_ids = get_solve_ids_for_matchteam(matchteam)
-        scoreboard[matchteam] = 0
-        for challenge_id in solve_ids:
-            challenge = Challenges.query.filter_by(id=challenge_id).first()
-            scoreboard[matchteam] += challenge.value
-    scoreboard = dict(sorted(scoreboard.items(), key=lambda item: item[1], reverse=True))
+    if request.method == "POST":
+        graph = {}
+        for matchteam in matchteams:
+            solves = get_solves_for_matchteam(matchteam)
+            solves.sort(key=lambda x: x.date)
+            ans = 0
+            graph[matchteam.name] = [(matchteam.match.start.timestamp()*1000, 0)]
+            for solve in solves:
+                ans += solve.challenge.value
+                graph[matchteam.name].append((solve.date.timestamp()*1000, ans))
+        return json.dumps(graph)
+    else:
+        scoreboard = {} 
+        for matchteam in matchteams:
+            solve_ids = get_solve_ids_for_matchteam(matchteam)
+            scoreboard[matchteam] = 0
+            for challenge_id in solve_ids:
+                challenge = Challenges.query.filter_by(id=challenge_id).first()
+                scoreboard[matchteam] += challenge.value
+        scoreboard = dict(sorted(scoreboard.items(), key=lambda item: item[1], reverse=True))
     return render_template("matches/scoreboard.html", infos=infos, errors=errors, match=match, scoreboard=scoreboard, active="scoreboard")
