@@ -14,15 +14,21 @@
     <table class="table table-striped">
       <thead>
       <tr>
-        <td>队伍名称</td>
-        <td>得分</td>
+        <td><b>排名</b></td>
+        <td><b>队伍名称</b></td>
+        <td><b>解题数量</b></td>
+        <td><b>最后提交时间</b></td>
+        <td><b>总分</b></td>
       </tr>
       </thead>
       <tbody>
         {% for matchteam in scoreboard %}
           <tr>
+            <td><b>{{ loop.index }}</b></td>
             <td>{{ matchteam.name }}</td>
-            <td>{{ scoreboard[matchteam] }}</td>
+            <td>{{ scoreboard[matchteam].solve_count }}</td>
+            <td><script>document.write(moment.utc("{{ scoreboard[matchteam].last_solve_date | isoformat }}").local().format("YYYY-MM-DD HH:mm:ss"))</script></td>
+            <td>{{ scoreboard[matchteam].score }}</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -42,8 +48,6 @@
       },
       body: "nonce=" + init.csrfNonce
     }).then(response => response.json()).then(data => {
-      console.log(data);
-      //each key in data is a team name, and the value is an array of scores with time
       var series = [];
       for (var team in data) {
         series.push({

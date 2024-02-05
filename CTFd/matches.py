@@ -57,6 +57,9 @@ def get_solves_for_matchteam(matchteam):
             .all()
         )
         solves.extend(user_solves)
+    solves.sort(key=lambda x: (x.challenge_id, x.id))
+    solves = [solves[i] for i in range(len(solves)) if i == 0 or solves[i].challenge_id != solves[i-1].challenge_id]
+    solves.sort(key=lambda x: x.id)
     return solves
 
 @matches.route("/matches")
@@ -100,6 +103,7 @@ def registration(match_id):
             if matchteam:
                 if len(matchteam.users) >= match.max_team_size:
                     errors.append("队伍人数已达上限")
+                    matchteam = None
                 else:
                     matchteam.users.append(user)
                     db.session.commit()
@@ -119,6 +123,8 @@ def registration(match_id):
                 db.session.add(matchteam)
                 db.session.commit()
                 return redirect(url_for("matches.registration", match_id=match_id))
+    else:
+        infos.append("请先完成报名")
     return render_template("matches/registration.html", infos=infos, errors=errors, match=match, matchteam=matchteam, active="registration")
 
 @matches.route("/matches/<int:match_id>/challenges")
@@ -157,24 +163,24 @@ def scoreboard(match_id):
     if not user_registered(match):
         return redirect(url_for("matches.registration", match_id=match_id))
     matchteams = MatchTeams.query.filter_by(match_id=match.id).all()
+    scoreboard = {}
+    graph = {}
     if request.method == "POST":
-        graph = {}
         for matchteam in matchteams:
             solves = get_solves_for_matchteam(matchteam)
-            solves.sort(key=lambda x: x.date)
-            ans = 0
-            graph[matchteam.name] = [(matchteam.match.start.timestamp()*1000, 0)]
+            score = 0
+            graph[matchteam.name] = [(match.start.timestamp()*1000, 0)]
             for solve in solves:
-                ans += solve.challenge.value
-                graph[matchteam.name].append((solve.date.timestamp()*1000, ans))
+                score += solve.challenge.value
+                graph[matchteam.name].append((solve.date.replace(tzinfo=datetime.timezone.utc).timestamp()*1000, score))
         return json.dumps(graph)
     else:
-        scoreboard = {} 
         for matchteam in matchteams:
-            solve_ids = get_solve_ids_for_matchteam(matchteam)
-            scoreboard[matchteam] = 0
-            for challenge_id in solve_ids:
-                challenge = Challenges.query.filter_by(id=challenge_id).first()
-                scoreboard[matchteam] += challenge.value
-        scoreboard = dict(sorted(scoreboard.items(), key=lambda item: item[1], reverse=True))
+            solves = get_solves_for_matchteam(matchteam)
+            scoreboard[matchteam] = {'score': 0, 'solve_count': 0, 'last_solve_date': None}
+            for solve in solves:
+                scoreboard[matchteam]['score'] += solve.challenge.value
+            scoreboard[matchteam]['solve_count'] = len(solves)
+            scoreboard[matchteam]['last_solve_date'] = solves[-1].date if solves else None
+        scoreboard = dict(sorted(scoreboard.items(), key=lambda item: (item[1]['score'], -item[1]['last_solve_date'].timestamp()), reverse=True))
     return render_template("matches/scoreboard.html", infos=infos, errors=errors, match=match, scoreboard=scoreboard, active="scoreboard")
